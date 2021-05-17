@@ -446,6 +446,7 @@ class SliverChildBuilderDelegate extends SliverChildDelegate {
   }
 
   @override
+  @pragma('vm:notify-debugger-on-exception')
   Widget? build(BuildContext context, int index) {
     assert(builder != null);
     if (index < 0 || (childCount != null && index >= childCount!))
@@ -469,7 +470,7 @@ class SliverChildBuilderDelegate extends SliverChildDelegate {
     }
     if (addAutomaticKeepAlives)
       child = AutomaticKeepAlive(child: child);
-    return KeyedSubtree(child: child, key: key);
+    return KeyedSubtree(key: key, child: child);
   }
 
   @override
@@ -733,7 +734,7 @@ class SliverChildListDelegate extends SliverChildDelegate {
     }
     if (addAutomaticKeepAlives)
       child = AutomaticKeepAlive(child: child);
-    return KeyedSubtree(child: child, key: key);
+    return KeyedSubtree(key: key, child: child);
   }
 
   @override
@@ -1669,7 +1670,7 @@ class SliverOffstage extends SingleChildRenderObjectWidget {
   }
 
   @override
-  _SliverOffstageElement createElement() => _SliverOffstageElement(this);
+  SingleChildRenderObjectElement createElement() => _SliverOffstageElement(this);
 }
 
 class _SliverOffstageElement extends SingleChildRenderObjectElement {

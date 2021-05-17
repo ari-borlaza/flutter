@@ -20,6 +20,8 @@ class UserMessages {
       'Flutter version $version at $flutterRoot';
   String flutterRevision(String revision, String age, String date) =>
       'Framework revision $revision ($age), $date';
+  String flutterUpstreamRepositoryUrl(String url) => 'Upstream repository $url';
+  String flutterGitUrl(String url) => 'FLUTTER_GIT_URL = $url';
   String engineRevision(String revision) => 'Engine revision $revision';
   String dartRevision(String revision) => 'Dart version $revision';
   String pubMirrorURL(String url) => 'Pub download mirror $url';
@@ -224,7 +226,7 @@ class UserMessages {
       'can be downloaded from https://github.com/ninja-build/ninja/releases';
   String ninjaTooOld(String minimumVersion) => 'ninja $minimumVersion or later is required.';
   String pkgConfigVersion(String version) => 'pkg-config version $version';
-  String get pkgConfigMissing => 'pgk-config is required for Linux development.\n'
+  String get pkgConfigMissing => 'pkg-config is required for Linux development.\n'
       'It is likely available from your distribution (e.g.: apt install pkg-config), or '
       'can be downloaded from https://www.freedesktop.org/wiki/Software/pkg-config/';
   String pkgConfigTooOld(String minimumVersion) => 'pkg-config $minimumVersion or later is required.';

@@ -27,7 +27,7 @@ const Map<String, String> _kManuallyPinnedDependencies = <String, String>{
   // Therefore, we control the version of flutter_gallery_assets so that
   // existing tests do not fail when the package has a new version.
   'flutter_gallery_assets': '^1.0.1',
-  'flutter_template_images': '1.0.1', // Must always exactly match flutter_tools template.
+  'flutter_template_images': '3.0.0', // Must always exactly match flutter_tools template.
   'mockito': '4.1.1+1', // Prevent mockito from upgrading to the source gen version.
   // DART TEAM OWNED NNBD DEPS
   'archive': '">=3.0.0-nullsafety.0"',
@@ -125,6 +125,12 @@ class UpdatePackagesCommand extends FlutterCommand {
         help: 'Use cached packages instead of accessing the network.',
         defaultsTo: false,
         negatable: false,
+      )
+      ..addFlag(
+        'crash',
+        help: 'For Flutter CLI testing only, forces this command to throw an unhandled exception.',
+        defaultsTo: false,
+        negatable: false,
       );
   }
 
@@ -179,6 +185,11 @@ class UpdatePackagesCommand extends FlutterCommand {
     final bool isVerifyOnly = boolArg('verify-only');
     final bool isConsumerOnly = boolArg('consumer-only');
     final bool offline = boolArg('offline');
+    final bool crash = boolArg('crash');
+
+    if (crash) {
+      throw StateError('test crash please ignore.');
+    }
 
     if (upgrade && offline) {
       throwToolExit(

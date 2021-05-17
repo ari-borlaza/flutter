@@ -7,14 +7,13 @@ import 'dart:convert' show LineSplitter, json, utf8;
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:meta/meta.dart';
-import 'package:path/path.dart' as path;
-
 import 'package:flutter_devicelab/framework/adb.dart';
 import 'package:flutter_devicelab/framework/framework.dart';
 import 'package:flutter_devicelab/framework/host_agent.dart';
 import 'package:flutter_devicelab/framework/task_result.dart';
 import 'package:flutter_devicelab/framework/utils.dart';
+import 'package:meta/meta.dart';
+import 'package:path/path.dart' as path;
 
 /// Must match flutter_driver/lib/src/common.dart.
 ///
@@ -706,6 +705,7 @@ class PerfTest {
       final String deviceId = device.deviceId;
 
       await flutter('drive', options: <String>[
+        '--no-dds', // TODO(dnfield): consider removing when https://github.com/flutter/flutter/issues/81707 is fixed
         '--no-android-gradle-daemon',
         '-v',
         '--verbose-system-logs',
@@ -778,6 +778,8 @@ const List<String> _kCommonScoreKeys = <String>[
   'worst_frame_rasterizer_time_millis',
   '90th_percentile_frame_rasterizer_time_millis',
   '99th_percentile_frame_rasterizer_time_millis',
+  'new_gen_gc_count',
+  'old_gen_gc_count',
 ];
 
 class PerfTestWithSkSL extends PerfTest {
@@ -824,7 +826,7 @@ class PerfTestWithSkSL extends PerfTest {
       await _generateSkSL();
 
       // Build the app with SkSL artifacts and run that app
-      final String observatoryUri = await _buildAndRun();
+      final String observatoryUri = await _runApp(skslPath: _skslJsonFileName);
 
       // Attach to the running app and run the final driver test to get metrics.
       final TaskResult result = await internalRun(
@@ -860,7 +862,7 @@ class PerfTestWithSkSL extends PerfTest {
     );
   }
 
-  Future<String> _runApp({String appBinary, bool cacheSkSL = false}) async {
+  Future<String> _runApp({String appBinary, bool cacheSkSL = false, String skslPath}) async {
     if (File(_vmserviceFileName).existsSync()) {
       File(_vmserviceFileName).deleteSync();
     }
@@ -869,6 +871,7 @@ class PerfTestWithSkSL extends PerfTest {
       _flutterPath,
       <String>[
         'run',
+        '--no-dds',
         if (deviceOperatingSystem == DeviceOperatingSystem.ios)
           ...<String>[
             '--device-timeout', '5',
@@ -878,6 +881,7 @@ class PerfTestWithSkSL extends PerfTest {
         '--purge-persistent-cache',
         '--no-publish-port',
         '--profile',
+        if (skslPath != null) '--bundle-sksl-path=$skslPath',
         if (cacheSkSL) '--cache-sksl',
         '-d', _device.deviceId,
         '-t', testTarget,
@@ -893,18 +897,6 @@ class PerfTestWithSkSL extends PerfTest {
 
     final File file = await waitForFile(_vmserviceFileName);
     return file.readAsStringSync();
-  }
-
-  // Return the VMService URI.
-  Future<String> _buildAndRun() async {
-    await flutter('build', options: <String>[
-      if (_isAndroid) 'apk' else 'ios',
-      '--profile',
-      '--bundle-sksl-path', _skslJsonFileName,
-      '-t', testTarget,
-    ]);
-
-    return _runApp(appBinary: _appBinary);
   }
 
   String get _skslJsonFileName => '$testDirectory/flutter_01.sksl.json';
@@ -1198,7 +1190,7 @@ class CompileTest {
 
     final _UnzipListEntry libflutter = fileToMetadata['lib/armeabi-v7a/libflutter.so'];
     final _UnzipListEntry libapp = fileToMetadata['lib/armeabi-v7a/libapp.so'];
-    final _UnzipListEntry license = fileToMetadata['assets/flutter_assets/NOTICES'];
+    final _UnzipListEntry license = fileToMetadata['assets/flutter_assets/NOTICES.Z'];
 
     return <String, dynamic>{
       'libflutter_uncompressed_bytes': libflutter.uncompressedSize,
@@ -1448,6 +1440,12 @@ class DevToolsMemoryTest {
   }
 
   Future<void> _launchDevTools() async {
+    // To mitigate https://github.com/flutter/flutter/issues/82142
+    await exec(pubBin, <String>[
+      'global',
+      'deactivate',
+      'devtools',
+    ], canFail: true);
     // The version of devtools is pinned. If we pub global activate devtools and an
     // upstream devtools release breaks our CI, it will manifest on an unrelated
     // commit, making it more difficult to determine the cause.
@@ -1457,7 +1455,7 @@ class DevToolsMemoryTest {
       'global',
       'activate',
       'devtools',
-      '2.0.0',
+      '2.2.3',
     ]);
     _devToolsProcess = await startProcess(
       pubBin,

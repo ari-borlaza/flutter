@@ -15,7 +15,7 @@ import '../dart/pub.dart';
 import '../features.dart';
 import '../flutter_manifest.dart';
 import '../flutter_project_metadata.dart';
-import '../globals.dart' as globals;
+import '../globals_null_migrated.dart' as globals;
 import '../project.dart';
 import '../reporting/reporting.dart';
 import '../runner/flutter_command.dart';
@@ -227,7 +227,7 @@ class CreateCommand extends CreateBase {
       );
     }
 
-    final Map<String, dynamic> templateContext = createTemplateContext(
+    final Map<String, Object> templateContext = createTemplateContext(
       organization: organization,
       projectName: projectName,
       projectDescription: stringArg('description'),
@@ -423,9 +423,10 @@ Your $application code is in $relativeAppMain.
     final String androidPluginIdentifier = templateContext['androidIdentifier'] as String;
     final String exampleProjectName = projectName + '_example';
     templateContext['projectName'] = exampleProjectName;
-    templateContext['androidIdentifier'] = createAndroidIdentifier(organization, exampleProjectName);
-    templateContext['iosIdentifier'] = createUTIIdentifier(organization, exampleProjectName);
-    templateContext['macosIdentifier'] = createUTIIdentifier(organization, exampleProjectName);
+    templateContext['androidIdentifier'] = CreateBase.createAndroidIdentifier(organization, exampleProjectName);
+    templateContext['iosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
+    templateContext['macosIdentifier'] = CreateBase.createUTIIdentifier(organization, exampleProjectName);
+    templateContext['windowsIdentifier'] = CreateBase.createWindowsIdentifier(organization, exampleProjectName);
     templateContext['description'] = 'Demonstrates how to use the $projectName plugin.';
     templateContext['pluginProjectName'] = projectName;
     templateContext['androidPluginIdentifier'] = androidPluginIdentifier;

@@ -69,6 +69,9 @@ class DevelopmentArtifact {
   /// Artifacts required for the Flutter Runner.
   static const DevelopmentArtifact flutterRunner = DevelopmentArtifact._('flutter_runner', feature: flutterFuchsiaFeature);
 
+  /// Artifacts required for desktop Windows UWP.
+  static const DevelopmentArtifact windowsUwp = DevelopmentArtifact._('winuwp', feature: windowsUwpEmbedding);
+
   /// Artifacts required for any development platform.
   ///
   /// This does not need to be explicitly returned from requiredArtifacts as
@@ -88,6 +91,7 @@ class DevelopmentArtifact {
     fuchsia,
     universal,
     flutterRunner,
+    windowsUwp,
   ];
 
   @override
@@ -1017,7 +1021,7 @@ class ArtifactUpdater {
       final Digest digest = await digests.stream.last;
       final String rawDigest = base64.encode(digest.bytes);
       if (rawDigest != md5Hash) {
-        throw Exception(''
+        throw Exception(
           'Expected $url to have md5 checksum $md5Hash, but was $rawDigest. This '
           'may indicate a problem with your connection to the Flutter backend servers. '
           'Please re-try the download after confirming that your network connection is '

@@ -937,9 +937,9 @@ void main() {
             const Text('Foo', key: ValueKey<String>('Text1')),
             const Text('Bar', key: ValueKey<String>('Text2')),
             TextButton(
-              child: const Text('Whatever'),
               key: const ValueKey<String>('Button'),
               onPressed: () {},
+              child: const Text('Whatever'),
             ),
           ],
         ),
@@ -1043,9 +1043,9 @@ void main() {
         child: Column(
           children: <Widget>[
             TextButton(
-              child: const Text('Whatever'),
               key: const ValueKey<String>('Button'),
               onPressed: stubCallback,
+              child: const Text('Whatever'),
             ),
           ],
         ),
@@ -1127,6 +1127,41 @@ void main() {
       final StubCommandResult result = await invokeCommand(ByValueKey('Button'), times);
       expect(result.resultParam, 'stub response');
       expect(invokes, times);
+    });
+  });
+
+  group('waitForTappable', () {
+    late FlutterDriverExtension driverExtension;
+
+    Future<Map<String, dynamic>> waitForTappable() async {
+      final SerializableFinder finder = ByValueKey('widgetOne');
+      final Map<String, String> arguments = WaitForTappable(finder).serialize();
+      final Map<String, dynamic> result = await driverExtension.call(arguments);
+      return result;
+    }
+
+    final Widget testWidget = MaterialApp(
+      home: Material(
+        child: Column(children: const<Widget> [
+          Text('Hello ', key: Key('widgetOne')),
+          SizedBox(
+            height: 0,
+            width: 0,
+            child: Text('World!', key: Key('widgetTwo')),
+            )
+          ],
+        ),
+      ),
+    );
+
+    testWidgets('returns true when widget is tappable', (
+        WidgetTester tester) async {
+      driverExtension = FlutterDriverExtension((String? arg) async => '', true, false);
+
+      await tester.pumpWidget(testWidget);
+
+      final Map<String, dynamic> waitForTappableResult = await waitForTappable();
+      expect(waitForTappableResult['isError'], isFalse);
     });
   });
 

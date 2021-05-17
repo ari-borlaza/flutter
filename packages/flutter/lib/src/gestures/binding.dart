@@ -395,6 +395,7 @@ mixin GestureBinding on BindingBase
   /// The `hitTestResult` argument may only be null for [PointerAddedEvent]s or
   /// [PointerRemovedEvent]s.
   @override // from HitTestDispatcher
+  @pragma('vm:notify-debugger-on-exception')
   void dispatchEvent(PointerEvent event, HitTestResult? hitTestResult) {
     assert(!locked);
     // No hit test information implies that this is a [PointerHoverEvent],
